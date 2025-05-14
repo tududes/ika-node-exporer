@@ -1106,6 +1106,7 @@
                         "uid": "prometheus"
                     },
                     "expr": "topk(10, consensus_reputation_scores)",
+                    "legendFormat": "{{authority}}",
                     "format": "time_series",
                     "instant": false,
                     "refId": "A"
