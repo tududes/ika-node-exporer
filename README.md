@@ -7,16 +7,46 @@ This repository contains the configuration files and dashboards for monitoring t
 - `prometheus.yml`: Prometheus configuration file for scraping IKA metrics
 - `ika_dashboard.json`: Grafana dashboard for visualizing IKA metrics
 
-## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+## Clone the repository
 
 ```bash
-curl -fsSL https://get.docker.com | bash
+git clone https://github.com/tududes/ika-node-exporter.git
+cd ika-node-exporter
 ```
 
-## Setup
+## Quick installation (automated)
+
+The repository ships with a helper script `setup.sh` that installs all dependencies, secures Grafana behind HTTPS, and launches the monitoring stack for you.
+
+### What the script does
+1. Installs Docker, Docker Compose, Nginx and Certbot.
+2. Prompts for a public domain name (e.g. `grafana.example.com`) and a Grafana admin password (stored in `.env`).
+3. Configures an Nginx reverse-proxy with a Let's Encrypt TLS certificate on ports 80/443.
+4. Starts Prometheus and Grafana with `docker compose up -d`.
+5. Prints the contents of `ika_dashboard.json` so you can import the dashboard with a single copy-paste.
+
+Run it (as **root** or with `sudo`) using **one of the options below**:
+
+**Option 1 – run the local script (after cloning):**
+```bash
+sudo bash setup.sh       # or: chmod +x setup.sh && sudo ./setup.sh
+```
+
+**Option 2 – execute in one line (without cloning first):**
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/tududes/ika-node-exporter/main/setup.sh)
+```
+
+After the script finishes you can reach:
+- **Grafana** at `https://<YOUR_DOMAIN>` (login: `admin` / the password you entered).
+- **Prometheus** from inside Grafana at `http://prometheus:9090`.
+
+If you do not have a domain name you can still access Grafana at `http://<SERVER_IP>:3000`, but HTTPS will not be configured.
+
+---
+
+## Manual Setup (Docker Compose)
 
 ### 1. Set up environment variables (optional)
 

@@ -7,7 +7,7 @@ curl -fsSL https://get.docker.com | bash
 
 # Quil Prometheus & Grafana Monitoring
 cd $HOME
-git clone https://github.com/sirouk/ika-node-exporter
+git clone https://github.com/tududes/ika-node-exporter
 
 # prompt the user if the .env does not exist
 # ask for the domain name like a user enters 'ika.nodekeeper.net'
