@@ -1,9 +1,14 @@
 #!/bin/bash
 
 # Install dependencies
-apt install -y jq curl nginx-full certbot python3-certbot-nginx
+sudo apt install -y jq curl nginx-full certbot python3-certbot-nginx
 curl -fsSL https://get.docker.com | bash
 
+# this adds a rule to /etc/ufw/after.rules to have docker behind ufw
+sudo wget -O /usr/local/bin/ufw-docker https://github.com/chaifeng/ufw-docker/raw/master/ufw-docker
+sudo chmod +x /usr/local/bin/ufw-docker
+sudo ufw-docker install
+sudo ufw reload
 
 # Quil Prometheus & Grafana Monitoring
 cd $HOME
