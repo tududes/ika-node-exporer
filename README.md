@@ -4,9 +4,23 @@ This repository contains the configuration files and dashboards for monitoring t
 
 ## Components
 
-- `prometheus.yml`: Prometheus configuration file for scraping IKA metrics
+- `prometheus.yml`: Prometheus configuration file with environment variable placeholders for scraping metrics
 - `ika_dashboard.json`: Grafana dashboard for visualizing IKA metrics
 
+## Environment Variable Substitution
+
+The `prometheus.yml` file uses environment variable placeholders (`${IKA_METRICS_TARGET}` and `${SUI_METRICS_TARGET}`) that are substituted by the setup script to generate the actual configuration. The original file is backed up as `prometheus.yml.original` before substitution.
+
+Additionally, the `VN_AUTHORITY` variable is used to customize the Grafana dashboard with your validator's authority name. The setup script will replace the default "VN_AUTHORITY" placeholder in the dashboard with your actual validator name.
+
+### Example .env file format:
+```
+DOMAIN=ika.example.com
+GRAFANA_ADMIN_PASSWORD=your_secure_password
+SUI_METRICS_TARGET=172.17.0.1:9284
+IKA_METRICS_TARGET=172.17.0.1:9184
+VN_AUTHORITY=MyValidator
+```
 
 ## Clone the repository
 
@@ -56,17 +70,44 @@ You can customize the Grafana admin credentials by setting environment variables
 # Create a .env file
 echo "GRAFANA_ADMIN_USER=your_username" > .env
 echo "GRAFANA_ADMIN_PASSWORD=your_secure_password" >> .env
+echo "SUI_METRICS_TARGET=172.17.0.1:9284" >> .env
+echo "IKA_METRICS_TARGET=172.17.0.1:9184" >> .env
+echo "VN_AUTHORITY=MyValidator" >> .env
 ```
 
-If you don't set these variables, the default credentials (admin/admin) will be used.
+If you don't set these variables, the default credentials (admin/admin) will be used for Grafana. However, the metrics targets are required for Prometheus to scrape the nodes.
 
-### 2. Start the monitoring stack
+### 2. Generate prometheus.yml from original
+
+If you're setting up manually or have updated your `.env` file, generate the `prometheus.yml` file:
+
+```bash
+source .env
+# Backup original if not already done
+[ ! -f prometheus.yml.original ] && cp prometheus.yml prometheus.yml.original
+# Generate prometheus.yml with substituted values
+sed "s|\${IKA_METRICS_TARGET}|$IKA_METRICS_TARGET|g; s|\${SUI_METRICS_TARGET}|$SUI_METRICS_TARGET|g" prometheus.yml.original > prometheus.yml
+```
+
+### 3. Update Grafana dashboard (if needed)
+
+If you need to update the validator authority name in the Grafana dashboard:
+
+```bash
+# Backup the original dashboard
+cp Grafana-TrustedPoint-Ika-Sui.json Grafana-TrustedPoint-Ika-Sui.json.original
+
+# Replace VN_AUTHORITY with your validator name
+sed -i "s/VN_AUTHORITY/$VN_AUTHORITY/g" Grafana-TrustedPoint-Ika-Sui.json
+```
+
+### 4. Start the monitoring stack
 
 ```bash
 docker-compose up -d
 ```
 
-### 3. Configure Grafana
+### 5. Configure Grafana
 
 1. Open Grafana at http://localhost:3000
 2. Log in with the credentials you specified in the .env file (or the default: username: admin, password: admin)
@@ -77,7 +118,7 @@ docker-compose up -d
    - Access: Server
 5. Click "Save & Test" to verify the connection
 
-### 4. Import the IKA Dashboard
+### 6. Import the IKA Dashboard
 
 1. In Grafana, navigate to Dashboards > Import
 2. Click "Upload JSON file" and select the `ika_dashboard.json` file
@@ -112,6 +153,10 @@ The IKA Protocol dashboard provides insights into:
 - Ensure that your IKA node is running and exposing metrics on port 9184
 - Check Prometheus targets at http://localhost:9090/targets to ensure IKA metrics are being scraped
 - If metrics are not being scraped, check that the IKA node is accessible from the Prometheus container
+- If you see `${IKA_METRICS_TARGET}` or `${SUI_METRICS_TARGET}` in the Prometheus targets page instead of actual values:
+  - Ensure the `.env` file exists and contains the correct variables
+  - Restart the containers with `docker-compose down` followed by `docker-compose up -d`
+  - Check container logs with `docker-compose logs prometheus` to see if there are any errors during startup
 
 ## Customization
 
@@ -123,4 +168,4 @@ Feel free to modify the dashboard to suit your specific monitoring needs:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.

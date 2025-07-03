@@ -1,9 +1,21 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  scrape_timeout: 10s
 
 scrape_configs:
-  - job_name: 'ika'
+  - job_name: "Ika-Validator"
     static_configs:
-      - targets: ['172.17.0.1:9184']
+      - targets: ["${IKA_METRICS_TARGET}"]
+        labels:
+          group: 'IkaValidator'
+          network: 'testnet'
+    metrics_path: '/metrics' 
+    
+  - job_name: "Sui-Fullnode"
+    static_configs:
+      - targets: ["${SUI_METRICS_TARGET}"]
+        labels:
+          group: 'Fullnode'
+          network: 'testnet' 
     metrics_path: '/metrics' 
