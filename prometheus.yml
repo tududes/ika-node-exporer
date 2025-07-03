@@ -10,12 +10,10 @@ scrape_configs:
         labels:
           group: 'IkaValidator'
           network: 'testnet'
-    metrics_path: '/metrics' 
-    
+
   - job_name: "Sui-Fullnode"
     static_configs:
       - targets: ["${SUI_METRICS_TARGET}"]
         labels:
           group: 'Fullnode'
           network: 'testnet' 
-    metrics_path: '/metrics' 
